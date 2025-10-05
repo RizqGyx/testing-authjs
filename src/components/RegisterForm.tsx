@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useActionState, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
@@ -16,11 +17,13 @@ import Image from "next/image";
 import { toast } from "sonner";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { signUpCredentials } from "@/lib/actions";
 
 export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [state, formAction] = useActionState(signUpCredentials, null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = (provider: string) => {
@@ -47,7 +50,7 @@ export function RegisterForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8 order-last" onSubmit={handleSubmit}>
+          <form className="p-6 md:p-8 order-last" onSubmit={handleSubmit} action={formAction}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create an account</h1>
@@ -63,7 +66,12 @@ export function RegisterForm({
                   placeholder="John Doe"
                   autoComplete="name"
                   required
-                />
+                />         
+                <FieldError>
+                {state?.error?.name && (
+                    <p className="text-red-500">{state?.error?.name}</p>
+                  )}
+                  </FieldError>
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -74,6 +82,11 @@ export function RegisterForm({
                   autoComplete="email"
                   required
                 />
+                <FieldError>
+                {state?.error?.email && (
+                    <p className="text-red-500">{state?.error?.email}</p>
+                  )}
+                  </FieldError>
               </Field>
               <Field>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -84,6 +97,28 @@ export function RegisterForm({
                   autoComplete="new-password"
                   required
                 />
+                <FieldError>
+                {state?.error?.password && (
+                    <p className="text-red-500">{state?.error?.password}</p>
+                  )}
+                  </FieldError>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="confirmPassword">
+                  Confirm Password
+                </FieldLabel>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="********"
+                  autoComplete="new-password"
+                  required
+                />
+                <FieldError>
+                {state?.error?.confirmPassword && (
+                    <p className="text-red-500">{state?.error?.confirmPassword}</p>
+                  )}
+                  </FieldError>
               </Field>
               <Field>
                 <Button type="submit" disabled={isLoading}>
@@ -128,11 +163,12 @@ export function RegisterForm({
               </FieldDescription>
             </FieldGroup>
           </form>
-          <div className="bg-muted relative hidden md:block">
+          <div className="bg-white relative hidden md:block">
             <Image
-              src="https://img.freepik.com/free-vector/verification-technologies-abstract-concept-illustration_335657-3894.jpg?semt=ais_hybrid&w=740&q=80"
+              src="https://img.freepik.com/premium-vector/tablet-login-concept-illustration_114360-7893.jpg"
               alt="Authentication Sign Up Image"
               fill
+              className="object-contain"
             />
           </div>
         </CardContent>

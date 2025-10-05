@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState, useState } from "react";
+import React, { useActionState, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,8 +16,8 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { toast } from "sonner";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { signUpCredentials } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm({
   className,
@@ -25,6 +25,7 @@ export function RegisterForm({
 }: React.ComponentProps<"div">) {
   const [state, formAction] = useActionState(signUpCredentials, null);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSignIn = (provider: string) => {
     try {
@@ -35,22 +36,23 @@ export function RegisterForm({
     }
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      toast.success("Registration successful!");
+  useEffect(() => {
+    if (state?.success) {
+      setIsLoading(true);
       setTimeout(() => {
-        redirect("/login");
-      }, 1000);
-    }, 1500);
-  };
+        toast.success("Registration successful!");
+        setTimeout(() => {
+          router.push("/login");
+        }, 1000);
+      }, 1500);
+    }
+  }, [state, router]);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8 order-last" onSubmit={handleSubmit} action={formAction}>
+          <form className="p-6 md:p-8 order-last" action={formAction}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create an account</h1>
@@ -62,46 +64,49 @@ export function RegisterForm({
                 <FieldLabel htmlFor="name">Name</FieldLabel>
                 <Input
                   id="name"
+                  name="name"
                   type="text"
                   placeholder="John Doe"
                   autoComplete="name"
                   required
-                />         
+                />
                 <FieldError>
-                {state?.error?.name && (
-                    <p className="text-red-500">{state?.error?.name}</p>
+                  {state?.error?.name && (
+                    <p className="text-red-500">{state?.error?.name[0]}</p>
                   )}
-                  </FieldError>
+                </FieldError>
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="m@example.com"
                   autoComplete="email"
                   required
                 />
                 <FieldError>
-                {state?.error?.email && (
-                    <p className="text-red-500">{state?.error?.email}</p>
+                  {state?.error?.email && (
+                    <p className="text-red-500">{state?.error?.email[0]}</p>
                   )}
-                  </FieldError>
+                </FieldError>
               </Field>
               <Field>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
                   placeholder="********"
                   autoComplete="new-password"
                   required
                 />
                 <FieldError>
-                {state?.error?.password && (
-                    <p className="text-red-500">{state?.error?.password}</p>
+                  {state?.error?.password && (
+                    <p className="text-red-500">{state?.error?.password[0]}</p>
                   )}
-                  </FieldError>
+                </FieldError>
               </Field>
               <Field>
                 <FieldLabel htmlFor="confirmPassword">
@@ -109,16 +114,19 @@ export function RegisterForm({
                 </FieldLabel>
                 <Input
                   id="confirmPassword"
+                  name="confirmPassword"
                   type="password"
                   placeholder="********"
                   autoComplete="new-password"
                   required
                 />
                 <FieldError>
-                {state?.error?.confirmPassword && (
-                    <p className="text-red-500">{state?.error?.confirmPassword}</p>
+                  {state?.error?.confirmPassword && (
+                    <p className="text-red-500">
+                      {state?.error?.confirmPassword[0]}
+                    </p>
                   )}
-                  </FieldError>
+                </FieldError>
               </Field>
               <Field>
                 <Button type="submit" disabled={isLoading}>

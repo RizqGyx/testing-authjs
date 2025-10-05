@@ -3,12 +3,14 @@
 import { registerSchema, loginSchema } from "@/lib/zod";
 import { hashSync, compareSync } from "bcrypt-ts";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
 
-export const signUpCredentials = async (prevState: unknown,data: FormData) => {
-  const validateFields = registerSchema.safeParse(
-    Object.fromEntries(data.entries())
+export const signUpCredentials = async (prevState: unknown, data: FormData) => {
+  const formValues = Object.fromEntries(data.entries());
+  const plainValues = Object.fromEntries(
+    Object.entries(formValues).map(([key, value]) => [key, String(value)])
   );
+
+  const validateFields = registerSchema.safeParse(plainValues);
 
   if (!validateFields.success) {
     return { error: validateFields.error.flatten().fieldErrors };
@@ -25,10 +27,12 @@ export const signUpCredentials = async (prevState: unknown,data: FormData) => {
         password: hashedPassword,
       },
     });
-  } catch (error) {
-    return { message: "Failed to register and create user" };
-  } finally {
-    redirect("/login");
+    return { success: true };
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      return { error: { email: ["Email already exists"] } };
+    }
+    return { message: "Failed to register user" };
   }
 };
 
@@ -56,8 +60,6 @@ export const signInCredentials = async (prevState: unknown, data: FormData) => {
     if (!isPasswordValid) {
       return { message: "Invalid email or password" };
     }
-
-    redirect("/dashboard");
   } catch (error) {
     return { message: "Failed to sign in. Please try again." };
   }

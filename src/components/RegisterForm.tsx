@@ -27,7 +27,7 @@ export function RegisterForm({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSignIn = (provider: string) => {
+  const handleSignInProvider = (provider: string) => {
     try {
       toast.success(`Redirecting to ${provider} sign-up...`);
     } catch (error) {
@@ -138,7 +138,7 @@ export function RegisterForm({
               </FieldSeparator>
               <Field className="grid grid-cols-2 gap-4">
                 <Button
-                  onClick={() => handleSignIn("Google")}
+                  onClick={() => handleSignInProvider("Google")}
                   variant="outline"
                   type="button"
                   disabled={isLoading}
@@ -152,7 +152,7 @@ export function RegisterForm({
                   <span className="sr-only">Sign up with Google</span>
                 </Button>
                 <Button
-                  onClick={() => handleSignIn("Github")}
+                  onClick={() => handleSignInProvider("Github")}
                   variant="outline"
                   type="button"
                   disabled={isLoading}
@@ -177,6 +177,7 @@ export function RegisterForm({
               alt="Authentication Sign Up Image"
               fill
               className="object-contain"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
         </CardContent>

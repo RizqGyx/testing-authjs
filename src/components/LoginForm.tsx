@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
@@ -14,25 +15,19 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { toast } from "sonner";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import Reat, { useState } from "react";
+import { redirect, useRouter } from "next/navigation";
+import React, { useEffect, useState  } from "react";
+import { signInCredentials } from "@/lib/actions";
+import { useActionState } from "react";
+
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const [state, formAction] = useActionState(signInCredentials, null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      toast.success("Registration successful!");
-      setTimeout(() => {
-        redirect("/dashboard");
-      }, 1000);
-    }, 1500);
-  };
+  const router = useRouter();
 
   const handleSignInProvider = (provider: string) => {
     try {
@@ -44,11 +39,27 @@ export function LoginForm({
     }
   };
 
+  useEffect(() => {
+    if (!state) return;
+  
+    if (state?.success) {
+      setIsLoading(true);
+    setTimeout(() => {
+      toast.success("Login successful!");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
+    }, 1500);
+    } else {
+      toast.error(state?.message || "Failed to login");
+    }
+  }, [state, router]);
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" action={formAction}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
@@ -60,10 +71,16 @@ export function LoginForm({
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="m@example.com"
                   required
                 />
+                <FieldError>
+                  {state?.error?.email && (
+                    <p className="text-red-500">{state?.error?.email[0]}</p>
+                  )}
+                </FieldError>
               </Field>
               <Field>
                 <div className="flex items-center">
@@ -77,13 +94,21 @@ export function LoginForm({
                 </div>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
                   placeholder="********"
                   required
                 />
+                <FieldError>
+                  {state?.error?.password && (
+                    <p className="text-red-500">{state?.error?.password[0]}</p>
+                  )}
+                </FieldError>
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Authenticating..." : "Sign In"}
+                </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 Or continue with
@@ -127,6 +152,7 @@ export function LoginForm({
               src="https://img.freepik.com/premium-vector/two-factor-authentication-concept-illustration_114360-5280.jpg"
               alt="Authentication Sign In Image"
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
         </CardContent>

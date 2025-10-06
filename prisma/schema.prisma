@@ -14,7 +14,7 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime? @map("email_verified")
-  image         String?
+  image         String?   @default("https://placehold.co/600x400")
   password      String?
   role          String    @default("user")
 

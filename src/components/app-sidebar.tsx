@@ -25,6 +25,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { User } from "next-auth"
 
 // This is sample data.
 const data = {
@@ -156,7 +157,11 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  user: User | undefined;
+}
+
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -167,7 +172,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={{ 
+          name: user?.name || data.user.name, 
+          email: user?.email || data.user.email, 
+          avatar: user?.image || data.user.avatar 
+        }} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

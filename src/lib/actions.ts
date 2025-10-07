@@ -3,7 +3,7 @@
 import { registerSchema, loginSchema } from "@/lib/zod";
 import { hashSync} from "bcrypt-ts";
 import { prisma } from "@/lib/prisma";
-import { signIn } from "@/lib/auth";
+import { signIn, signOut } from "@/lib/auth";
 import { AuthError } from "next-auth";
 
 export const signUpCredentials = async (prevState: unknown, data: FormData) => {
@@ -76,4 +76,14 @@ export const signInCredentials = async (prevState: unknown, data: FormData) => {
     
     return { success: false, message: "Unexpected error occurred" };
   }
+}
+
+export async function signInWithProvider(provider: string) {
+  "use server";
+  await signIn(provider, { redirectTo: "/dashboard" });
+}
+
+export async function signOutAccount() {
+  "use server";
+  await signOut({ redirectTo: "/login" });
 }

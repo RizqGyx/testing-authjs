@@ -9,22 +9,28 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum UserStatus {
+  ACTIVE
+  PENDING_VERIFICATION
+  BANNED
+}
+
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?   @default("https://placehold.co/600x400")
+  email         String?    @unique
+  emailVerified DateTime?  @map("email_verified")
+  image         String?    @default("https://placehold.co/600x400")
   password      String?
-  role          String    @default("user")
+  role          String     @default("user")
+  status        UserStatus @default(ACTIVE)
 
-  accounts      Account[]
-  sessions      Session[]
-  posts         Post[]
-  products      Product[]
+  accounts  Account[]
+  sessions  Session[]
+  posts     Post[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -70,21 +76,8 @@ model Post {
   published Boolean  @default(false)
   authorId  String
 
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  author User @relation(fields: [authorId], references: [id])
-}
-
-model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Int
-  userId      String
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
